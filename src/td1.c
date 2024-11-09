@@ -12,6 +12,8 @@
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
+long nb_nodes = 0;
+
 typedef struct pion_s {
     int couleur;
     int valeur;
@@ -382,6 +384,17 @@ int f_valeur(Pion *jeu, int joueur) {
     return valeur;
 }
 
+// fonction d'évaluation
+/*int f_eval(Pion *jeu, int joueur) {
+    int winner = f_gagnant();
+    if (winner == joueur) {
+        return INFINI;
+    } else if (winner == -joueur) {
+        return -INFINI;
+    }
+    return f_valeur(jeu, joueur);
+}*/
+
 int f_distance(Pion *game_board, int player) {
     int qg_index = player == 1 ? 0 : NB_LIGNES - 1;
     int dist = 0;
@@ -403,8 +416,25 @@ int f_eval(Pion *jeu, int joueur) {
     } else if (winner == -joueur) {
         return -INFINI;
     }
-    return f_valeur(jeu, joueur);
+
+    int W1 = 10, W2 = 5, W3 = 3, W4 = 7, W5 = 8;
+    int materialAdvantage = f_nbPions(jeu,joueur) - f_nbPions(jeu, -joueur);
+    int positionalAdvantage = f_distance(jeu, joueur) - f_distance(jeu, -joueur);
+    // int supportAdvantage = sumSupport(state, player) - sumSupport(state, -player);
+    int supportAdvantage = 0;
+    // int capturePotential = countPotentialCaptures(state, player);
+    int capturePotential = 0;
+    // int threats = countPotentialCaptures(state, -player);
+    int threats = 0;
+
+    int h = W1 * materialAdvantage
+            + W2 * positionalAdvantage
+            + W3 * supportAdvantage
+            + W4 * capturePotential
+            - W5 * threats;
+    return h;
 }
+
 
 // copie du plateau
 void f_copie_plateau(Pion *source, Pion *destination) {
@@ -497,6 +527,7 @@ MoveEval f_max(Pion*, int, int);
 
 // Fonction min trouve le minimum des noeuds fils
 MoveEval f_min(Pion *game_board, int player, int depth) {
+    nb_nodes++;
     MoveEval bestMove = {
             INFINI,
             {-1, -1, -1, -1}
@@ -519,7 +550,7 @@ MoveEval f_min(Pion *game_board, int player, int depth) {
             free(new_board);
             continue;
         }
-        int eval = f_max(game_board, player, depth - 1).eval;
+        int eval = f_max(new_board, -player, depth - 1).eval;
         if (eval < bestMove.eval) {
             bestMove.m = m;
             bestMove.eval = eval;
@@ -532,6 +563,7 @@ MoveEval f_min(Pion *game_board, int player, int depth) {
 
 // Fonction max trouve le maximum des noeuds fils
 MoveEval f_max(Pion *game_board, int player, int depth) {
+    nb_nodes++;
     MoveEval bestMove = {
             -INFINI,
             {-1, -1, -1, -1}
@@ -554,7 +586,7 @@ MoveEval f_max(Pion *game_board, int player, int depth) {
             free(new_board);
             continue;
         }
-        int eval = f_min(game_board, player, depth - 1).eval;
+        int eval = f_min(new_board, -player, depth - 1).eval;
         if (eval > bestMove.eval) {
             bestMove.m = m;
             bestMove.eval = eval;
@@ -670,6 +702,7 @@ int main(int argc, char **argv) {
         }
         joueur = -joueur;
     }
+    printf("nb nodes = %ld\n", nb_nodes);
 #if DEBUG
     printf("dbg: exiting %s %d\n", __FUNCTION__, __LINE__);
 #endif

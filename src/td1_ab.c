@@ -12,6 +12,9 @@
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
+long nb_nodes = 0;
+long nb_coupures = 0;
+
 typedef struct pion_s {
     int couleur;
     int valeur;
@@ -513,6 +516,7 @@ MoveEval f_max(Pion*, int, int, int, int);
 
 // Fonction min trouve le minimum des noeuds fils
 MoveEval f_min(Pion *game_board, int player, int alpha, int beta, int depth) {
+    nb_nodes++;
     MoveEval bestMove = {
             INFINI,
             {-1, -1, -1, -1}
@@ -545,6 +549,7 @@ MoveEval f_min(Pion *game_board, int player, int alpha, int beta, int depth) {
             bestMove.eval = eval;
         }
         if (alpha >= beta) {
+            nb_coupures++;
             bestMove.eval = alpha;
             free(new_board);
             return bestMove;
@@ -557,6 +562,7 @@ MoveEval f_min(Pion *game_board, int player, int alpha, int beta, int depth) {
 
 // Fonction max trouve le maximum des noeuds fils
 MoveEval f_max(Pion *game_board, int player, int alpha, int beta, int depth) {
+    nb_nodes++;
     MoveEval bestMove = {
             -INFINI,
             {-1, -1, -1, -1}
@@ -589,6 +595,7 @@ MoveEval f_max(Pion *game_board, int player, int alpha, int beta, int depth) {
             bestMove.eval = eval;
         }
         if (alpha >= beta) {
+            nb_coupures++;
             bestMove.eval = beta;
             free(new_board);
             return bestMove;
@@ -704,6 +711,8 @@ int main(int argc, char **argv) {
         }
         joueur = -joueur;
     }
+    printf("nb nodes = %ld\n", nb_nodes);
+    printf("nb coupures = %ld\n", nb_coupures);
 #if DEBUG
     printf("dbg: exiting %s %d\n", __FUNCTION__, __LINE__);
 #endif
