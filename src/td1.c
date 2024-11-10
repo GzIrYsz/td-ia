@@ -552,7 +552,10 @@ MoveEval f_min(Pion *game_board, int player, int depth) {
         }
         int eval = f_max(new_board, -player, depth - 1).eval;
         if (eval < bestMove.eval) {
-            bestMove.m = m;
+            bestMove.m.x1 = m.x1;
+            bestMove.m.y1 = m.y1;
+            bestMove.m.x2 = m.x2;
+            bestMove.m.y2 = m.y2;
             bestMove.eval = eval;
         }
         free(new_board);
@@ -588,7 +591,10 @@ MoveEval f_max(Pion *game_board, int player, int depth) {
         }
         int eval = f_min(new_board, -player, depth - 1).eval;
         if (eval > bestMove.eval) {
-            bestMove.m = m;
+            bestMove.m.x1 = m.x1;
+            bestMove.m.y1 = m.y1;
+            bestMove.m.x2 = m.x2;
+            bestMove.m.y2 = m.y2;
             bestMove.eval = eval;
         }
         free(new_board);
@@ -617,11 +623,15 @@ void f_IA(int joueur) {
 #if DEBUG
     printf("dbg: entering %s %d\n", __FUNCTION__, __LINE__);
 #endif
+    nb_nodes = 0;
     MoveEval bestMove = f_max(plateauDeJeu, joueur, MAX_DEPTH);
     if (0 != f_bouge_piece(plateauDeJeu, bestMove.m.x1, bestMove.m.y1, bestMove.m.x2, bestMove.m.y2, joueur)) {
         fprintf(stderr, "mauvais choix: (%d, %d) -> (%d, %d)\n", bestMove.m.x1, bestMove.m.y1, bestMove.m.x2, bestMove.m.y2);
         exit(EXIT_FAILURE);
     }
+    FILE *f = fopen("../data/minimax.csv", "a+");
+    fprintf(f, "%ld\n", nb_nodes);
+    fclose(f);
 #if DEBUG
     printf("dbg: exiting %s %d\n", __FUNCTION__, __LINE__);
 #endif

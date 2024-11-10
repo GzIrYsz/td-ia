@@ -626,11 +626,20 @@ void f_IA(int joueur) {
 #if DEBUG
     printf("dbg: entering %s %d\n", __FUNCTION__, __LINE__);
 #endif
+    nb_nodes = 0;
+    nb_coupures = 0;
     MoveEval bestMove = f_max(plateauDeJeu, joueur, -INFINI, INFINI, MAX_DEPTH);
     if (0 != f_bouge_piece(plateauDeJeu, bestMove.m.x1, bestMove.m.y1, bestMove.m.x2, bestMove.m.y2, joueur)) {
         fprintf(stderr, "mauvais choix: (%d, %d) -> (%d, %d)\n", bestMove.m.x1, bestMove.m.y1, bestMove.m.x2, bestMove.m.y2);
         exit(EXIT_FAILURE);
     }
+    FILE *f = fopen("../data/alphabeta.csv", "a+");
+    fprintf(f, "%ld\n", nb_nodes);
+    fclose(f);
+
+    f = fopen("../data/coupures.csv", "a+");
+    fprintf(f, "%ld\n", nb_coupures);
+    fclose(f);
 #if DEBUG
     printf("dbg: exiting %s %d\n", __FUNCTION__, __LINE__);
 #endif
